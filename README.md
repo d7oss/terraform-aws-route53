@@ -30,3 +30,29 @@ module "private_dns_zone" {
   }
 }
 ```
+
+
+### d7oss/route53/aws//record
+
+```hcl
+module "clickpb_dns_mx_records" {
+  source = "d7oss/route53/aws//record"
+  # version = set me
+
+  for_each = {
+    "clickpb.com.br": [
+      "1 ASPMX.L.GOOGLE.COM",
+      "5 ALT1.ASPMX.L.GOOGLE.COM",
+      "5 ALT2.ASPMX.L.GOOGLE.COM",
+      "10 ALT3.ASPMX.L.GOOGLE.COM",
+      "10 ALT4.ASPMX.L.GOOGLE.COM",
+    ],
+  }
+
+  zone_id = module.dns_zone.id
+  type = "MX"
+  name = each.key
+  ttl = 300
+  records = each.value
+}
+```
