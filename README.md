@@ -35,12 +35,12 @@ module "private_dns_zone" {
 ### d7oss/route53/aws//record
 
 ```hcl
-module "clickpb_dns_mx_records" {
+module "dns_mx_records" {
   source = "d7oss/route53/aws//record"
   # version = set me
 
   for_each = {
-    "clickpb.com.br": [
+    "example.com": [
       "1 ASPMX.L.GOOGLE.COM",
       "5 ALT1.ASPMX.L.GOOGLE.COM",
       "5 ALT2.ASPMX.L.GOOGLE.COM",
@@ -55,4 +55,47 @@ module "clickpb_dns_mx_records" {
   ttl = 300
   records = each.value
 }
+
+module "dns_txt_records" {
+  source = "d7oss/route53/aws//record"
+  # version = set me
+
+  for_each = {
+    "example.com": "some-dns-ownership-validation-key",
+    "foo.example.com": "foo",
+    "bar.example.com": "bar",
+  }
+
+  zone_id = module.dns_zone.id
+  type = "TXT"
+  name = each.key
+  ttl = 300
+  records = [each.value]
+}
+
+module "dns_alias_records" {
+  source = "d7oss/route53/aws//record"
+  # version = set me
+
+  for_each = {  # Mapping of objects to create aliases for
+    "app.example.com": {
+      dns_name = aws_lb.apps.dns_name
+      zone_id = aws_lb.apps.zone_id
+    },
+    "cdn.example.com": {
+      dns_name = aws_cloudfront_distribution.cache.domain_name
+      zone_id = aws_cloudfront_distribution.cache.hosted_zone_id
+    }
+  }
+
+  zone_id = module.dns_zone.id
+  type = "A"
+  name = each.key
+  alias = {
+    name = each.value.dns_name
+    zone_id = each.value.zone_id
+    evaluate_target_health = true
+  }
+}
+
 ```
