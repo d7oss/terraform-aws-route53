@@ -1,7 +1,3 @@
-terraform {
-  experiments = [ module_variable_optional_attrs ]
-}
-
 resource "aws_route53_zone" "main" {
   /*
   The DNS zone
